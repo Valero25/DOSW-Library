@@ -2,7 +2,7 @@ package edu.eci.dosw.controller;
 
 import edu.eci.dosw.exception.BookNotAvailableException;
 import edu.eci.dosw.model.Loan;
-import edu.eci.dosw.service.LibraryService;
+import edu.eci.dosw.service.LoanService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,10 +17,10 @@ import java.util.Map;
 @RequestMapping("/api/loans")
 public class LoanController {
 
-    private final LibraryService libraryService;
+    private final LoanService loanService;
 
-    public LoanController(LibraryService libraryService) {
-        this.libraryService = libraryService;
+    public LoanController(LoanService loanService) {
+        this.loanService = loanService;
     }
 
     /**
@@ -30,7 +30,7 @@ public class LoanController {
      */
     @GetMapping
     public ResponseEntity<List<Loan>> getAllLoans() {
-        return ResponseEntity.ok(libraryService.getAllLoans());
+        return ResponseEntity.ok(loanService.getAllLoans());
     }
 
     /**
@@ -45,7 +45,7 @@ public class LoanController {
         String bookId = body.get("bookId");
         String userId = body.get("userId");
         try {
-            Loan loan = libraryService.loanBook(bookId, userId);
+            Loan loan = loanService.loanBook(bookId, userId);
             return ResponseEntity.status(HttpStatus.CREATED).body(loan);
         } catch (BookNotAvailableException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", e.getMessage()));
@@ -63,7 +63,7 @@ public class LoanController {
     @PutMapping("/{loanId}/return")
     public ResponseEntity<?> returnBook(@PathVariable String loanId) {
         try {
-            Loan loan = libraryService.returnBook(loanId);
+            Loan loan = loanService.returnBook(loanId);
             return ResponseEntity.ok(loan);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

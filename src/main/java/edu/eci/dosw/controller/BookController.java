@@ -1,7 +1,7 @@
 package edu.eci.dosw.controller;
 
 import edu.eci.dosw.model.Book;
-import edu.eci.dosw.service.LibraryService;
+import edu.eci.dosw.service.BookService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,10 +15,10 @@ import java.util.List;
 @RequestMapping("/api/books")
 public class BookController {
 
-    private final LibraryService libraryService;
+    private final BookService bookService;
 
-    public BookController(LibraryService libraryService) {
-        this.libraryService = libraryService;
+    public BookController(BookService bookService) {
+        this.bookService = bookService;
     }
 
     /**
@@ -28,7 +28,7 @@ public class BookController {
      */
     @GetMapping
     public ResponseEntity<List<Book>> getAllBooks() {
-        return ResponseEntity.ok(libraryService.getAllBooks());
+        return ResponseEntity.ok(bookService.getAllBooks());
     }
 
     /**
@@ -39,7 +39,7 @@ public class BookController {
      */
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable String id) {
-        return libraryService.findBookById(id)
+        return bookService.findBookById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -52,7 +52,7 @@ public class BookController {
      */
     @PostMapping
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
-        Book created = libraryService.addBook(book);
+        Book created = bookService.addBook(book);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
@@ -64,7 +64,7 @@ public class BookController {
      */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> removeBook(@PathVariable String id) {
-        boolean removed = libraryService.removeBook(id);
+        boolean removed = bookService.removeBook(id);
         return removed ? ResponseEntity.noContent().build()
                        : ResponseEntity.notFound().build();
     }
