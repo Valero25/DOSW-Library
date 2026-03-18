@@ -78,24 +78,36 @@ src/
 
 ## Cómo ejecutar
 
+### Ejecución de las funcionalidades de su API
+
+Para levantar el servidor y probar los Endpoints REST (por ejemplo herramientas como Postman o cURL):
+
 ```bash
-# Compilar y ejecutar
 mvn spring-boot:run
+```
+La aplicación se ejecutará en http://localhost:8080.
 
-# Ejecutar pruebas
+### Ejecución de las pruebas de los servicios
+
+Para correr todas las pruebas unitarias y verificar los escenarios exitosos y de error del sistema:
+
+```bash
 mvn test
-
-# Generar reporte de cobertura (JaCoCo)
-mvn verify
-
-# Análisis SonarQube (requiere servidor SonarQube)
-mvn sonar:sonar \
-  -Dsonar.host.url=http://localhost:9000 \
-  -Dsonar.login=<token>
 ```
 
-El reporte de cobertura JaCoCo se genera en `target/site/jacoco/index.html`.
+### Cobertura y análisis estático
 
-## Cobertura mínima
+Para ejecutar los reportes de cobertura (con JaCoCo) garantizando que se cumpla el umbral del **80%**:
 
-JaCoCo está configurado para fallar el build si la cobertura de líneas es inferior al **80 %**.
+```bash
+mvn verify
+```
+*El reporte interactivo de cobertura se genera en la ruta `target/site/jacoco/index.html`.*
+
+Para el análisis estático de código mediante SonarQube (se debe tener un servidor SonarQube en ejecución local o remoto):
+
+```bash
+mvn sonar:sonar \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.login=<tu_token>
+```
