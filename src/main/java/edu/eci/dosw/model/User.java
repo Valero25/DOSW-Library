@@ -1,49 +1,24 @@
 package edu.eci.dosw.model;
 
+import edu.eci.dosw.model.enums.MembershipType;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDate;
+
 /**
  * Represents a library user.
  */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     private String id;
     private String name;
     private String email;
-
-    public User() {
-    }
-
-    public User(String id, String name, String email) {
-        this.id = id;
-        this.name = name;
-        this.email = email;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    @Override
-    public String toString() {
-        return "User{id='" + id + "', name='" + name + "', email='" + email + "'}";
-    }
+    
+    private MembershipType membershipType;
+    private LocalDate dateAddedAsUser;
 }

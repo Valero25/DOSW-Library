@@ -1,8 +1,21 @@
 package edu.eci.dosw.model;
 
+import edu.eci.dosw.model.enums.PublicationType;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+import java.time.LocalDate;
+import java.util.List;
+
 /**
  * Represents a book in the library system.
  */
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString
 public class Book {
 
     private String id;
@@ -10,9 +23,13 @@ public class Book {
     private String author;
     private String isbn;
     private boolean available;
-
-    public Book() {
-    }
+    
+    private List<String> categories;
+    private PublicationType publicationType;
+    private LocalDate publicationDate;
+    private Metadata metadata;
+    private Availability availability;
+    private LocalDate dateAddedToCatalog;
 
     public Book(String id, String title, String author, String isbn) {
         this.id = id;
@@ -20,51 +37,5 @@ public class Book {
         this.author = author;
         this.isbn = isbn;
         this.available = true;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getAuthor() {
-        return author;
-    }
-
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-
-    public String getIsbn() {
-        return isbn;
-    }
-
-    public void setIsbn(String isbn) {
-        this.isbn = isbn;
-    }
-
-    public boolean isAvailable() {
-        return available;
-    }
-
-    public void setAvailable(boolean available) {
-        this.available = available;
-    }
-
-    @Override
-    public String toString() {
-        return "Book{id='" + id + "', title='" + title + "', author='" + author
-                + "', isbn='" + isbn + "', available=" + available + "}";
     }
 }

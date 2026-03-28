@@ -1,0 +1,22 @@
+{
+  "_id": "b1a2c3d4-e5f6-7890-abcd-ef1234567890",
+  "title": "Cien años de soledad",
+  "author": "Gabriel García Márquez",
+  "isbn": "978-0-06-088328-7",
+  "available": true,
+  "categories": ["Realismo mágico", "Literatura latinoamericana"],
+  "publicationType": "LIBRO",
+  "publicationDate": "1967-06-05",
+  "dateAddedToCatalog": "2024-01-15",
+  "metadata": {
+    "pages": 417,
+    "language": "Español",
+    "publisher": "Editorial Sudamericana"
+  },
+  "availability": {
+    "status": "Disponible",
+    "totalCopies": 5,
+    "availableCopies": 3,
+    "loanedCopies": 2
+  }
+}

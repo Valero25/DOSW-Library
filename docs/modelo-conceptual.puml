@@ -1,0 +1,133 @@
+@startuml Modelo Conceptual - DOSW Library
+
+skinparam classBackgroundColor<<base>> #ADD8E6
+skinparam classBackgroundColor<<embedded>> #ADD8E6
+skinparam classBackgroundColor<<enum>> #ADD8E6
+skinparam classBackgroundColor<<request>> #7B68EE
+skinparam classBackgroundColor<<subject>> #FFA500
+skinparam classBackgroundColor<<group>> #FF6B6B
+
+skinparam classFontSize 14
+skinparam classBorderColor #333333
+skinparam ArrowColor #333333
+
+' ==========================================
+' MODELO CONCEPTUAL
+' ==========================================
+
+class Book <<subject>> {
+  id : String
+  title : String
+  author : String
+  isbn : String
+  available : boolean
+  categories : List<String>
+  publicationType : PublicationType
+  publicationDate : LocalDate
+  dateAddedToCatalog : LocalDate
+}
+
+class Metadata <<embedded>> {
+  pages : Integer
+  language : String
+  publisher : String
+}
+
+class Availability <<embedded>> {
+  status : String
+  totalCopies : Integer
+  availableCopies : Integer
+  loanedCopies : Integer
+}
+
+class User <<base>> {
+  id : String
+  name : String
+  email : String
+  membershipType : MembershipType
+  dateAddedAsUser : LocalDate
+}
+
+class Loan <<request>> {
+  id : String
+  loanDate : LocalDate
+  returnDate : LocalDate
+  returned : boolean
+}
+
+class LoanHistory <<embedded>> {
+  status : String
+  date : LocalDate
+}
+
+enum PublicationType <<enum>> {
+  LIBRO
+  REVISTA
+  EBOOK
+  CARTILLA
+  PERIODICO
+  TESIS
+  ARTICULO
+}
+
+enum MembershipType <<enum>> {
+  STANDARD
+  PLATINUM
+  VIP
+}
+
+' --- Relaciones ---
+Book *-- Metadata : embebido
+Book *-- Availability : embebido
+Book -- PublicationType
+Loan *-- LoanHistory : embebido
+Loan -- Book : referenciado (bookId)
+Loan -- User : referenciado (userId)
+User -- MembershipType
+
+' ==========================================
+' DOCUMENTOS MONGODB (Colecciones)
+' ==========================================
+
+package "MongoDB Collections" <<Database>> #EEFFEE {
+
+  object "books" as books_doc #C8E6C9 {
+    <b>Colección: books</b>
+    --
+    <b>Embebidos:</b>
+    - metadata { pages, language, publisher }
+    - availability { status, totalCopies,
+      availableCopies, loanedCopies }
+    - categories [ ]
+    --
+    <b>Referenciados:</b>
+    - (ninguno)
+  }
+
+  object "users" as users_doc #C8E6C9 {
+    <b>Colección: users</b>
+    --
+    <b>Embebidos:</b>
+    - (ninguno)
+    --
+    <b>Referenciados:</b>
+    - (ninguno)
+  }
+
+  object "loans" as loans_doc #C8E6C9 {
+    <b>Colección: loans</b>
+    --
+    <b>Embebidos:</b>
+    - loanHistory [ { status, date } ]
+    --
+    <b>Referenciados:</b>
+    - bookId → books._id
+    - userId → users._id
+  }
+}
+
+' --- Relaciones documento-colección ---
+books_doc ..> loans_doc : "bookId"
+users_doc ..> loans_doc : "userId"
+
+@enduml

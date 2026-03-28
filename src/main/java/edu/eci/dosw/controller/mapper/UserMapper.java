@@ -21,11 +21,18 @@ public class UserMapper {
      * @return DTO con los datos del usuario
      */
     public static UserDTO toDTO(User user) {
-        return new UserDTO(
-                user.getId(),
-                user.getName(),
-                user.getEmail()
-        );
+        UserDTO dto = new UserDTO();
+        dto.setId(user.getId());
+        dto.setName(user.getName());
+        dto.setEmail(user.getEmail());
+        
+        if (user.getMembershipType() != null) {
+            dto.setMembershipType(user.getMembershipType().toString());
+        }
+        
+        dto.setDateAddedAsUser(user.getDateAddedAsUser());
+        
+        return dto;
     }
 
     /**
@@ -35,10 +42,22 @@ public class UserMapper {
      * @return entidad usuario correspondiente al DTO
      */
     public static User toModel(UserDTO dto) {
-        return new User(
-                dto.getId(),
-                dto.getName(),
-                dto.getEmail()
-        );
+        User user = new User();
+        user.setId(dto.getId());
+        user.setName(dto.getName());
+        user.setEmail(dto.getEmail());
+        
+        if (dto.getMembershipType() != null) {
+            try {
+                user.setMembershipType(Enum.valueOf(edu.eci.dosw.core.model.enums.MembershipType.class, dto.getMembershipType()));
+            } catch (IllegalArgumentException e) {
+                // Si no es válido, dejar nulo
+                user.setMembershipType(null);
+            }
+        }
+        
+        user.setDateAddedAsUser(dto.getDateAddedAsUser());
+        
+        return user;
     }
 }

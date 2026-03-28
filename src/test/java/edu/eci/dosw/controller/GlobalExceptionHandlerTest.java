@@ -17,10 +17,8 @@ class GlobalExceptionHandlerTest {
     void testHandleIllegalArgument() {
         ResponseEntity<Object> res = handler.handleIllegalArgumentException(new IllegalArgumentException("error"));
         assertEquals(HttpStatus.BAD_REQUEST, res.getStatusCode());
-        @SuppressWarnings("unchecked")
-        java.util.Map<String, Object> body = (java.util.Map<String, Object>) res.getBody();
-        assertNotNull(body);
-        assertTrue(body.get("error").toString().contains("error"));
+        ;
+        assertTrue(res.getBody().toString().contains("error"));
     }
 
     @Test

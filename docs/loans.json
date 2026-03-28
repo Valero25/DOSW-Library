@@ -1,0 +1,18 @@
+{
+  "_id": "l1234567-89ab-cdef-0123-456789abcdef",
+  "bookId": "b1a2c3d4-e5f6-7890-abcd-ef1234567890",
+  "userId": "u9f8e7d6-c5b4-a321-0fed-cba987654321",
+  "loanDate": "2024-03-15",
+  "returnDate": null,
+  "returned": false,
+  "loanHistory": [
+    {
+      "status": "Prestado",
+      "date": "2024-03-15"
+    },
+    {
+      "status": "Renovado",
+      "date": "2024-03-29"
+    }
+  ]
+}
