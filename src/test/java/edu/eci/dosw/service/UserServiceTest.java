@@ -1,35 +1,67 @@
 package edu.eci.dosw.service;
 
 import edu.eci.dosw.model.User;
+import edu.eci.dosw.persistence.entity.UserEntity;
+import edu.eci.dosw.persistence.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
+    @Mock
+    private UserRepository userRepository;
+
+    @InjectMocks
     private UserService userService;
+
+    private UserEntity userEntity;
 
     @BeforeEach
     void setUp() {
-        userService = new UserService();
+        userEntity = new UserEntity();
+        userEntity.setId("user-1");
+        userEntity.setName("Juan");
+        userEntity.setEmail("juan@eci.edu.co");
+        userEntity.setUsername("juan");
+        userEntity.setPassword("encoded");
+        userEntity.setRole("USER");
     }
 
     @Test
     void registerUser_ShouldRegisterSuccessfully() {
-        User user = new User(null, "Juan", "juan@eci.edu.co");
+        when(userRepository.save(any(UserEntity.class))).thenReturn(userEntity);
+
+        User user = new User();
+        user.setName("Juan");
+        user.setEmail("juan@eci.edu.co");
+        user.setUsername("juan");
+        user.setPassword("pass123");
+
         User result = userService.registerUser(user);
 
         assertNotNull(result.getId());
         assertEquals("Juan", result.getName());
+        verify(userRepository).save(any(UserEntity.class));
     }
 
     @Test
     void registerUser_ShouldThrowException_WhenNameIsBlank() {
-        User user = new User(null, " ", "juan@eci.edu.co");
+        User user = new User();
+        user.setName("  ");
+        user.setEmail("test@eci.edu.co");
+
         assertThrows(IllegalArgumentException.class, () -> userService.registerUser(user));
     }
 
@@ -40,8 +72,12 @@ class UserServiceTest {
 
     @Test
     void getAllUsers_ShouldReturnAllRegisteredUsers() {
-        userService.registerUser(new User(null, "User 1", "u1@eci.edu.co"));
-        userService.registerUser(new User(null, "User 2", "u2@eci.edu.co"));
+        UserEntity entity2 = new UserEntity();
+        entity2.setId("user-2");
+        entity2.setName("Ana");
+        entity2.setEmail("ana@eci.edu.co");
+
+        when(userRepository.findAll()).thenReturn(List.of(userEntity, entity2));
 
         List<User> users = userService.getAllUsers();
         assertEquals(2, users.size());
@@ -49,16 +85,19 @@ class UserServiceTest {
 
     @Test
     void findUserById_ShouldReturnUser_WhenExists() {
-        User user = userService.registerUser(new User(null, "Ana", "ana@eci.edu.co"));
-        Optional<User> found = userService.findUserById(user.getId());
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(userEntity));
+
+        Optional<User> found = userService.findUserById("user-1");
 
         assertTrue(found.isPresent());
-        assertEquals("Ana", found.get().getName());
+        assertEquals("Juan", found.get().getName());
     }
 
     @Test
     void findUserById_ShouldReturnEmpty_WhenNotExists() {
-        Optional<User> found = userService.findUserById("non-existent-id");
+        when(userRepository.findById("non-existent")).thenReturn(Optional.empty());
+
+        Optional<User> found = userService.findUserById("non-existent");
         assertTrue(found.isEmpty());
     }
 }

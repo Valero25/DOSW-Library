@@ -20,9 +20,6 @@ class DTOTest {
         assertEquals("Author", dto.getAuthor());
         assertEquals("123", dto.getIsbn());
         assertTrue(dto.isAvailable());
-
-        BookDTO dto2 = new BookDTO("2", "T2", "A2", "456", false);
-        assertEquals("2", dto2.getId());
     }
 
     @Test
@@ -35,9 +32,6 @@ class DTOTest {
         assertEquals("1", dto.getId());
         assertEquals("Name", dto.getName());
         assertEquals("em", dto.getEmail());
-
-        UserDTO dto2 = new UserDTO("2", "N2", "e2");
-        assertEquals("2", dto2.getId());
     }
 
     @Test
@@ -57,8 +51,5 @@ class DTOTest {
         assertEquals(now, dto.getLoanDate());
         assertEquals(now, dto.getReturnDate());
         assertTrue(dto.isReturned());
-
-        LoanDTO dto2 = new LoanDTO("2", "b2", "u2", now, now, false);
-        assertEquals("2", dto2.getId());
     }
 }

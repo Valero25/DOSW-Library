@@ -14,6 +14,14 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MapperTest {
 
+    private User createUser(String id, String name, String email) {
+        User user = new User();
+        user.setId(id);
+        user.setName(name);
+        user.setEmail(email);
+        return user;
+    }
+
     @Test
     void testBookMapper() {
         Book book = new Book("1", "T", "A", "I");
@@ -28,7 +36,7 @@ class MapperTest {
 
     @Test
     void testUserMapper() {
-        User user = new User("1", "N", "E");
+        User user = createUser("1", "N", "E");
         UserDTO dto = UserMapper.toDTO(user);
         assertEquals("1", dto.getId());
 
@@ -40,7 +48,7 @@ class MapperTest {
     @Test
     void testLoanMapper() {
         Book book = new Book("b1", "T", "A", "I");
-        User user = new User("u1", "N", "E");
+        User user = createUser("u1", "N", "E");
         LocalDate now = LocalDate.now();
         Loan loan = new Loan("l1", book, user, now);
         loan.setReturned(true);

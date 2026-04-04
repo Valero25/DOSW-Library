@@ -29,30 +29,38 @@ class LoanServiceTest {
         loanService = new LoanService(bookService, userService);
     }
 
+    private User createUser(String id, String name, String email) {
+        User user = new User();
+        user.setId(id);
+        user.setName(name);
+        user.setEmail(email);
+        return user;
+    }
+
     // --- ESCENARIOS EXITOSOS ---
 
     @Test
     void prestarLibro_DebeCrearPrestamoYReducirEjemplares_CuandoLibroDisponible() {
         Book libro = bookService.addBook(new Book(null, "Clean Architecture", "Robert C. Martin", "9780134494166"), 1);
-        User usuario = userService.registerUser(new User(null, "María", "maria@eci.edu.co"));
+        User usuario = userService.registerUser(createUser(null, "María", "maria@eci.edu.co"));
 
         Loan prestamo = loanService.loanBook(libro.getId(), usuario.getId());
 
         assertNotNull(prestamo.getId());
-        assertEquals(0, bookService.getAvailableCopies(libro.getId())); // Se redujo el ejemplar
-        assertFalse(libro.isAvailable()); // No hay más ejemplares
+        assertEquals(0, bookService.getAvailableCopies(libro.getId()));
+        assertFalse(libro.isAvailable());
     }
 
     @Test
     void devolverLibro_DebeMarcarComoDevuelto_YAumentarEjemplares() {
         Book libro = bookService.addBook(new Book(null, "TDD", "Kent Beck", "9780321146533"), 1);
-        User usuario = userService.registerUser(new User(null, "Pedro", "pedro@eci.edu.co"));
+        User usuario = userService.registerUser(createUser(null, "Pedro", "pedro@eci.edu.co"));
         Loan prestamo = loanService.loanBook(libro.getId(), usuario.getId());
 
         Loan devuelto = loanService.returnBook(prestamo.getId());
 
         assertTrue(devuelto.isReturned());
-        assertEquals(1, bookService.getAvailableCopies(libro.getId())); // Se devolvió el ejemplar
+        assertEquals(1, bookService.getAvailableCopies(libro.getId()));
         assertTrue(libro.isAvailable());
     }
 
@@ -60,8 +68,8 @@ class LoanServiceTest {
     void listarPrestamosPorUsuario_DebeRetornarSoloLosDelUsuario() {
         Book l1 = bookService.addBook(new Book(null, "L1", "A1", "1"), 5);
         Book l2 = bookService.addBook(new Book(null, "L2", "A2", "2"), 5);
-        User u1 = userService.registerUser(new User(null, "U1", "u1@e.co"));
-        User u2 = userService.registerUser(new User(null, "U2", "u2@e.co"));
+        User u1 = userService.registerUser(createUser(null, "U1", "u1@e.co"));
+        User u2 = userService.registerUser(createUser(null, "U2", "u2@e.co"));
 
         loanService.loanBook(l1.getId(), u1.getId());
         loanService.loanBook(l2.getId(), u1.getId());
@@ -74,12 +82,12 @@ class LoanServiceTest {
     @Test
     void listarPrestamosActivos_DebeRetornarSoloLosNoDevueltos() {
         Book l1 = bookService.addBook(new Book(null, "L1", "A1", "1"), 5);
-        User u1 = userService.registerUser(new User(null, "U1", "u1@e.co"));
+        User u1 = userService.registerUser(createUser(null, "U1", "u1@e.co"));
 
         Loan p1 = loanService.loanBook(l1.getId(), u1.getId());
         Loan p2 = loanService.loanBook(l1.getId(), u1.getId());
 
-        loanService.returnBook(p1.getId()); // Devuelve p1
+        loanService.returnBook(p1.getId());
 
         List<Loan> activos = loanService.getActiveLoans();
         assertEquals(1, activos.size());
@@ -91,10 +99,10 @@ class LoanServiceTest {
     @Test
     void prestarLibro_DebeLanzarExcepcion_CuandoSinEjemplaresDisponibles() {
         Book libro = bookService.addBook(new Book(null, "Refactoring", "Martin Fowler", "9780201485677"), 1);
-        User u1 = userService.registerUser(new User(null, "Carlos", "carlos@eci.edu.co"));
-        User u2 = userService.registerUser(new User(null, "Ana", "ana@eci.edu.co"));
+        User u1 = userService.registerUser(createUser(null, "Carlos", "carlos@eci.edu.co"));
+        User u2 = userService.registerUser(createUser(null, "Ana", "ana@eci.edu.co"));
 
-        loanService.loanBook(libro.getId(), u1.getId()); // 0 ejemplares restantes
+        loanService.loanBook(libro.getId(), u1.getId());
 
         assertThrows(BookNotAvailableException.class,
                 () -> loanService.loanBook(libro.getId(), u2.getId()));
@@ -102,7 +110,7 @@ class LoanServiceTest {
 
     @Test
     void prestarLibro_DebeLanzarExcepcion_CuandoLibroNoExiste() {
-        User usuario = userService.registerUser(new User(null, "Ana", "ana@eci.edu.co"));
+        User usuario = userService.registerUser(createUser(null, "Ana", "ana@eci.edu.co"));
         assertThrows(IllegalArgumentException.class,
                 () -> loanService.loanBook("sin-libro", usuario.getId()));
     }
@@ -116,7 +124,7 @@ class LoanServiceTest {
 
     @Test
     void prestarLibro_DebeLanzarExcepcion_CuandoUsuarioSuperaLimitePrestamosActivos() {
-        User usuario = userService.registerUser(new User(null, "Luis", "luis@eci.edu.co"));
+        User usuario = userService.registerUser(createUser(null, "Luis", "luis@eci.edu.co"));
         for (int i = 0; i < 3; i++) {
             Book libro = bookService.addBook(new Book(null, "Libro " + i, "Autor", "978000000000" + i), 1);
             loanService.loanBook(libro.getId(), usuario.getId());
@@ -130,7 +138,7 @@ class LoanServiceTest {
     @Test
     void devolverLibro_DebeLanzarExcepcion_CuandoYaFueDevuelto() {
         Book libro = bookService.addBook(new Book(null, "SICP", "Abelson", "9780262510875"), 1);
-        User usuario = userService.registerUser(new User(null, "Laura", "laura@eci.edu.co"));
+        User usuario = userService.registerUser(createUser(null, "Laura", "laura@eci.edu.co"));
         Loan prestamo = loanService.loanBook(libro.getId(), usuario.getId());
         loanService.returnBook(prestamo.getId());
 

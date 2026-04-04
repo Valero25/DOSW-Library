@@ -1,85 +1,133 @@
 package edu.eci.dosw.service;
 
 import edu.eci.dosw.exception.BookNotAvailableException;
-import edu.eci.dosw.model.Book;
 import edu.eci.dosw.model.Loan;
-import edu.eci.dosw.model.User;
+import edu.eci.dosw.persistence.entity.BookEntity;
+import edu.eci.dosw.persistence.entity.LoanEntity;
+import edu.eci.dosw.persistence.entity.LoanHistoryEntity;
+import edu.eci.dosw.persistence.entity.UserEntity;
+import edu.eci.dosw.persistence.mapper.LoanEntityMapper;
+import edu.eci.dosw.persistence.repository.BookRepository;
+import edu.eci.dosw.persistence.repository.LoanRepository;
+import edu.eci.dosw.persistence.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
- * Service class encapsulating loan-related operations.
+ * Servicio encargado de gestionar los préstamos de la biblioteca.
  */
 @Service
 public class LoanService {
 
-    private final BookService bookService;
-    private final UserService userService;
-    private final List<Loan> loans = new ArrayList<>();
+    private final LoanRepository loanRepository;
+    private final BookRepository bookRepository;
+    private final UserRepository userRepository;
 
-    public LoanService(BookService bookService, UserService userService) {
-        this.bookService = bookService;
-        this.userService = userService;
+    public LoanService(LoanRepository loanRepository, BookRepository bookRepository, UserRepository userRepository) {
+        this.loanRepository = loanRepository;
+        this.bookRepository = bookRepository;
+        this.userRepository = userRepository;
     }
 
     /**
-     * Creates a loan for the specified book and user.
-     *
-     * @param bookId the ID of the book to loan
-     * @param userId the ID of the user requesting the loan
-     * @return the created Loan
-     * @throws BookNotAvailableException if the book is not available
-     * @throws IllegalArgumentException  if the book or user is not found
+     * Crea un préstamo de un libro para un usuario.
      */
+    @Transactional
     public Loan loanBook(String bookId, String userId) {
-        Book book = bookService.findBookById(bookId)
-                .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
-        User user = userService.findUserById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+        BookEntity book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Libro no encontrado: " + bookId));
+        UserEntity user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado: " + userId));
 
-        if (!book.isAvailable()) {
+        int available = book.getAvailableCopies() != null ? book.getAvailableCopies() : 0;
+        if (available <= 0) {
             throw new BookNotAvailableException(bookId);
         }
 
-        book.setAvailable(false);
-        Loan loan = new Loan(UUID.randomUUID().toString(), book, user, LocalDate.now());
-        loans.add(loan);
-        return loan;
+        // Reducir copias disponibles
+        book.setAvailableCopies(available - 1);
+        book.setLoanedCopies((book.getLoanedCopies() != null ? book.getLoanedCopies() : 0) + 1);
+        book.setAvailable(book.getAvailableCopies() > 0);
+        book.setStatus(book.getAvailableCopies() > 0 ? "Disponible" : "Agotado");
+        bookRepository.save(book);
+
+        // Crear préstamo
+        LoanEntity loan = new LoanEntity();
+        loan.setBook(book);
+        loan.setUser(user);
+        loan.setLoanDate(LocalDate.now());
+        loan.setReturned(false);
+
+        // Agregar historial
+        LoanHistoryEntity history = new LoanHistoryEntity();
+        history.setStatus("Prestado");
+        history.setDate(LocalDate.now());
+        history.setLoan(loan);
+        loan.setLoanHistory(new ArrayList<>(List.of(history)));
+
+        LoanEntity saved = loanRepository.save(loan);
+        return LoanEntityMapper.toDomain(saved);
     }
 
     /**
-     * Returns a book, marking the associated loan as complete.
-     *
-     * @param loanId the ID of the loan to complete
-     * @return the updated Loan
-     * @throws IllegalArgumentException if the loan is not found or already returned
+     * Registra la devolución de un libro.
      */
+    @Transactional
     public Loan returnBook(String loanId) {
-        Loan loan = loans.stream()
-                .filter(l -> l.getId().equals(loanId))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Loan not found: " + loanId));
+        LoanEntity loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new IllegalArgumentException("Préstamo no encontrado: " + loanId));
 
         if (loan.isReturned()) {
-            throw new IllegalArgumentException("Loan " + loanId + " has already been returned.");
+            throw new IllegalArgumentException("El préstamo " + loanId + " ya fue devuelto.");
         }
 
         loan.setReturned(true);
         loan.setReturnDate(LocalDate.now());
-        loan.getBook().setAvailable(true);
-        return loan;
+
+        // Incrementar copias disponibles
+        BookEntity book = loan.getBook();
+        int available = book.getAvailableCopies() != null ? book.getAvailableCopies() : 0;
+        int total = book.getTotalCopies() != null ? book.getTotalCopies() : 0;
+
+        if (available < total) {
+            book.setAvailableCopies(available + 1);
+            book.setLoanedCopies((book.getLoanedCopies() != null ? book.getLoanedCopies() : 0) - 1);
+            book.setAvailable(true);
+            book.setStatus("Disponible");
+            bookRepository.save(book);
+        }
+
+        // Agregar historial de devolución
+        LoanHistoryEntity history = new LoanHistoryEntity();
+        history.setStatus("Devuelto");
+        history.setDate(LocalDate.now());
+        history.setLoan(loan);
+        loan.getLoanHistory().add(history);
+
+        LoanEntity saved = loanRepository.save(loan);
+        return LoanEntityMapper.toDomain(saved);
     }
 
     /**
-     * Returns all loans in the system.
-     *
-     * @return list of all loans
+     * Retorna todos los préstamos.
      */
     public List<Loan> getAllLoans() {
-        return new ArrayList<>(loans);
+        return loanRepository.findAll().stream()
+                .map(LoanEntityMapper::toDomain)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Retorna los préstamos de un usuario específico.
+     */
+    public List<Loan> getLoansByUserId(String userId) {
+        return loanRepository.findByUserId(userId).stream()
+                .map(LoanEntityMapper::toDomain)
+                .collect(Collectors.toList());
     }
 }

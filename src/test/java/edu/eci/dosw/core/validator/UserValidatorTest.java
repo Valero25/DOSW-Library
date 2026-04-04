@@ -10,9 +10,17 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 class UserValidatorTest {
 
+    private User createUser(String id, String name, String email) {
+        User user = new User();
+        user.setId(id);
+        user.setName(name);
+        user.setEmail(email);
+        return user;
+    }
+
     @Test
     void validar_DebePasar_CuandoUsuarioEsValido() {
-        User usuario = new User("1", "Juan", "juan@eci.edu.co");
+        User usuario = createUser("1", "Juan", "juan@eci.edu.co");
         assertDoesNotThrow(() -> UserValidator.validate(usuario));
     }
 
@@ -23,19 +31,19 @@ class UserValidatorTest {
 
     @Test
     void validar_DebeLanzarExcepcion_CuandoNombreEstaVacio() {
-        User usuario = new User("1", "  ", "juan@eci.edu.co");
+        User usuario = createUser("1", "  ", "juan@eci.edu.co");
         assertThrows(IllegalArgumentException.class, () -> UserValidator.validate(usuario));
     }
 
     @Test
     void validar_DebeLanzarExcepcion_CuandoCorreoTieneFormatoInvalido() {
-        User usuario = new User("1", "Juan", "correo-invalido");
+        User usuario = createUser("1", "Juan", "correo-invalido");
         assertThrows(IllegalArgumentException.class, () -> UserValidator.validate(usuario));
     }
 
     @Test
     void validar_DebePasar_CuandoCorreoEsNulo() {
-        User usuario = new User("1", "Juan", null);
+        User usuario = createUser("1", "Juan", null);
         assertDoesNotThrow(() -> UserValidator.validate(usuario));
     }
 }

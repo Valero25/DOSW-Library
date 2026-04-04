@@ -23,11 +23,19 @@ class UserServiceTest {
         userService = new UserService();
     }
 
+    private User createUser(String id, String name, String email) {
+        User user = new User();
+        user.setId(id);
+        user.setName(name);
+        user.setEmail(email);
+        return user;
+    }
+
     // --- ESCENARIOS EXITOSOS ---
 
     @Test
     void registrarUsuario_DebeRegistrarseExitosamente() {
-        User usuario = new User(null, "Juan", "juan@eci.edu.co");
+        User usuario = createUser(null, "Juan", "juan@eci.edu.co");
         User resultado = userService.registerUser(usuario);
 
         assertNotNull(resultado.getId());
@@ -36,15 +44,15 @@ class UserServiceTest {
 
     @Test
     void obtenerTodosLosUsuarios_DebeRetornarTodosLosRegistrados() {
-        userService.registerUser(new User(null, "U1", "u1@eci.edu.co"));
-        userService.registerUser(new User(null, "U2", "u2@eci.edu.co"));
+        userService.registerUser(createUser(null, "U1", "u1@eci.edu.co"));
+        userService.registerUser(createUser(null, "U2", "u2@eci.edu.co"));
         List<User> usuarios = userService.getAllUsers();
         assertEquals(2, usuarios.size());
     }
 
     @Test
     void buscarUsuarioPorId_DebeRetornarUsuario_CuandoExiste() {
-        User usuario = userService.registerUser(new User(null, "Ana", "ana@eci.edu.co"));
+        User usuario = userService.registerUser(createUser(null, "Ana", "ana@eci.edu.co"));
         Optional<User> encontrado = userService.findUserById(usuario.getId());
         assertTrue(encontrado.isPresent());
         assertEquals("Ana", encontrado.get().getName());
@@ -52,8 +60,8 @@ class UserServiceTest {
 
     @Test
     void actualizarUsuario_DebeActualizarDatosExitosamente() {
-        User usuario = userService.registerUser(new User(null, "Original", "o@eci.edu.co"));
-        User actualizado = new User(usuario.getId(), "Nuevo", "n@eci.edu.co");
+        User usuario = userService.registerUser(createUser(null, "Original", "o@eci.edu.co"));
+        User actualizado = createUser(usuario.getId(), "Nuevo", "n@eci.edu.co");
         User resultado = userService.updateUser(actualizado);
 
         assertEquals("Nuevo", resultado.getName());
@@ -62,7 +70,7 @@ class UserServiceTest {
 
     @Test
     void eliminarUsuario_DebeRetornarVerdadero_YBorrarlo_CuandoExiste() {
-        User usuario = userService.registerUser(new User(null, "Eliminar", "eliminar@eci.edu.co"));
+        User usuario = userService.registerUser(createUser(null, "Eliminar", "eliminar@eci.edu.co"));
         assertTrue(userService.removeUser(usuario.getId()));
         assertTrue(userService.getAllUsers().isEmpty());
     }
@@ -72,7 +80,7 @@ class UserServiceTest {
     @Test
     void registrarUsuario_DebeLanzarExcepcion_CuandoUsuarioNuloONombreVacio() {
         assertThrows(IllegalArgumentException.class, () -> userService.registerUser(null));
-        assertThrows(IllegalArgumentException.class, () -> userService.registerUser(new User(null, "  ", "e")));
+        assertThrows(IllegalArgumentException.class, () -> userService.registerUser(createUser(null, "  ", "e")));
     }
 
     @Test
@@ -88,7 +96,7 @@ class UserServiceTest {
 
     @Test
     void actualizarUsuario_DebeLanzarExcepcion_CuandoUsuarioNoExiste() {
-        User actualizado = new User("falso", "Nuevo", "correo");
+        User actualizado = createUser("falso", "Nuevo", "correo");
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(actualizado));
     }
 }

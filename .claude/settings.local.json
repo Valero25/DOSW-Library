@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker run:*)",
+      "Bash(docker rm:*)",
+      "Bash(mvn compile:*)",
+      "Bash(mvn spring-boot:run)",
+      "Bash(curl -s http://localhost:8080/api/books)",
+      "Bash(mvn spring-boot:run -DskipTests)",
+      "Bash(kill %1)",
+      "Bash(taskkill //F //IM java.exe)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/api/books)",
+      "Bash(curl -s -X POST http://localhost:8080/auth/register -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin123\",\"name\":\"Admin\",\"email\":\"admin@library.com\",\"role\":\"LIBRARIAN\"}')",
+      "Bash(curl -s -X POST http://localhost:8080/auth/login -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin123\"}')",
+      "Bash(mvn test:*)"
+    ]
+  }
+}
