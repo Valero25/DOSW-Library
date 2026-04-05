@@ -1,4 +1,4 @@
-package edu.eci.dosw.persistence.entity;
+package edu.eci.dosw.persistence.relational.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -1,7 +1,7 @@
 package edu.eci.dosw.controller;
 
-import edu.eci.dosw.persistence.entity.UserEntity;
-import edu.eci.dosw.persistence.repository.UserRepository;
+import edu.eci.dosw.model.User;
+import edu.eci.dosw.persistence.UserPersistenceRepository;
 import edu.eci.dosw.security.JwtService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,6 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -39,7 +38,7 @@ class AuthControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private UserRepository userRepository;
+    private UserPersistenceRepository userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -47,11 +46,11 @@ class AuthControllerTest {
     @Autowired
     private JwtService jwtService;
 
-    private UserEntity testUser;
+    private User testUser;
 
     @BeforeEach
     void setUp() {
-        testUser = new UserEntity();
+        testUser = new User();
         testUser.setId("user-1");
         testUser.setUsername("testuser");
         testUser.setPassword(passwordEncoder.encode("password123"));
@@ -104,7 +103,7 @@ class AuthControllerTest {
 
     @Test
     void register_WithValidData_ShouldCreateUserAndReturnToken() throws Exception {
-        UserEntity savedUser = new UserEntity();
+        User savedUser = new User();
         savedUser.setId("new-user-1");
         savedUser.setUsername("newuser");
         savedUser.setPassword(passwordEncoder.encode("password123"));
@@ -115,7 +114,7 @@ class AuthControllerTest {
 
         when(userRepository.existsByUsername("newuser")).thenReturn(false);
         when(userRepository.existsByEmail("newuser@example.com")).thenReturn(false);
-        when(userRepository.save(any(UserEntity.class))).thenReturn(savedUser);
+        when(userRepository.save(any(User.class))).thenReturn(savedUser);
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,7 +128,7 @@ class AuthControllerTest {
 
         verify(userRepository).existsByUsername("newuser");
         verify(userRepository).existsByEmail("newuser@example.com");
-        verify(userRepository).save(any(UserEntity.class));
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
@@ -171,7 +170,7 @@ class AuthControllerTest {
 
     @Test
     void register_WithLIBRARIANRole_ShouldCreateLIBRARIANUser() throws Exception {
-        UserEntity librarianUser = new UserEntity();
+        User librarianUser = new User();
         librarianUser.setId("librarian-1");
         librarianUser.setUsername("librarianuser");
         librarianUser.setPassword(passwordEncoder.encode("password123"));
@@ -182,7 +181,7 @@ class AuthControllerTest {
 
         when(userRepository.existsByUsername("librarianuser")).thenReturn(false);
         when(userRepository.existsByEmail("librarian@example.com")).thenReturn(false);
-        when(userRepository.save(any(UserEntity.class))).thenReturn(librarianUser);
+        when(userRepository.save(any(User.class))).thenReturn(librarianUser);
 
         mockMvc.perform(post("/auth/register")
                 .contentType(MediaType.APPLICATION_JSON)

@@ -1,0 +1,165 @@
+name: CI/CD Pipeline
+
+# Trigger del workflow: se ejecuta en Pull Requests
+on:
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  # ==========================================
+  # JOB 1: BUILD
+  # Descripción: Compilar el proyecto Maven (hasta fase compile)
+  # ==========================================
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout código del repositorio
+        uses: actions/checkout@v4
+      
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Compilar proyecto (Maven compile)
+        run: mvn clean compile
+      
+      - name: Cachear artefactos compilados
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: maven-build-${{ github.run_id }}
+      
+      - name: Mostrar resultado de compilación
+        if: success()
+        run: echo "✅ Compilación exitosa"
+      
+      - name: Fallar en caso de error de compilación
+        if: failure()
+        run: echo "❌ Error en la compilación"
+
+  # ==========================================
+  # JOB 2: TEST
+  # Descripción: Ejecutar pruebas (verify sin recompilar)
+  # Dependencia: Necesita que build sea exitoso
+  # ==========================================
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build  # Espera a que build termine exitosamente
+    
+    steps:
+      - name: Checkout código del repositorio
+        uses: actions/checkout@v4
+      
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Restaurar artefactos compilados del cache
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: maven-build-${{ github.run_id }}
+          fail-on-cache-miss: true
+      
+      - name: Ejecutar tests con Maven verify (sin recompilar)
+        run: mvn verify -DskipTests=false --no-transfer-progress
+      
+      - name: Generar reporte de cobertura
+        if: success()
+        run: mvn jacoco:report
+      
+      - name: Mostrar resultado de tests
+        if: success()
+        run: echo "✅ Tests exitosos"
+      
+      - name: Fallar en caso de error en tests
+        if: failure()
+        run: echo "❌ Error en los tests"
+      
+      - name: Subir reporte de cobertura (opcional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage-report
+          path: target/site/jacoco/
+          retention-days: 30
+
+  # ==========================================
+  # JOB 3: ANALYSIS
+  # Descripción: Análisis estático de código
+  # Dependencia: Depende de test
+  # ==========================================
+  analysis:
+    name: Code Analysis
+    runs-on: ubuntu-latest
+    needs: test  # Espera a que test termine exitosamente
+    
+    steps:
+      - name: Checkout código del repositorio
+        uses: actions/checkout@v4
+      
+      - name: Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: maven
+      
+      - name: Restaurar artefactos compilados del cache
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: maven-build-${{ github.run_id }}
+          fail-on-cache-miss: true
+      
+      - name: Ejecutar análisis de calidad (Maven Verify)
+        run: mvn verify --no-transfer-progress
+        continue-on-error: true
+      
+      - name: Mostrar resultado de análisis
+        if: success()
+        run: echo "✅ Análisis estático completado"
+      
+      - name: Subir reportes de análisis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: analysis-reports
+          path: target/
+          retention-days: 30
+
+  # ==========================================
+  # JOB 4: DEPLOY
+  # Descripción: Deployment (por ahora solo contiene un mensaje)
+  # Dependencia: Necesita que test sea exitoso
+  # ==========================================
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: test  # Espera a que test termine exitosamente
+    
+    steps:
+      - name: Checkout código del repositorio
+        uses: actions/checkout@v4
+      
+      - name: Mensaje de deployment
+        run: echo "En construcción ..."
+      
+      - name: Espacio para agregar pasos de deployment
+        run: |
+          echo "Este job puede ser expandido para:"
+          echo "- Packear la aplicación (mvn package)"
+          echo "- Crear imagen Docker"
+          echo "- Desplegar a ambiente staging"
+          echo "- Desplegar a ambiente production"

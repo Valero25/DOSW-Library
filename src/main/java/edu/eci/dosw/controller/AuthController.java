@@ -1,7 +1,7 @@
 package edu.eci.dosw.controller;
 
-import edu.eci.dosw.persistence.entity.UserEntity;
-import edu.eci.dosw.persistence.repository.UserRepository;
+import edu.eci.dosw.model.User;
+import edu.eci.dosw.persistence.UserPersistenceRepository;
 import edu.eci.dosw.security.JwtService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,11 +21,11 @@ import java.util.Map;
 @Tag(name = "Autenticación", description = "Endpoints de login y registro")
 public class AuthController {
 
-    private final UserRepository userRepository;
+    private final UserPersistenceRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public AuthController(UserRepository userRepository,
+    public AuthController(UserPersistenceRepository userRepository,
                           PasswordEncoder passwordEncoder,
                           JwtService jwtService) {
         this.userRepository = userRepository;
@@ -39,7 +39,7 @@ public class AuthController {
         String username = credentials.get("username");
         String password = credentials.get("password");
 
-        UserEntity user = userRepository.findByUsername(username)
+        User user = userRepository.findByUsername(username)
                 .orElse(null);
 
         if (user == null || !passwordEncoder.matches(password, user.getPassword())) {
@@ -81,7 +81,7 @@ public class AuthController {
                     .body(Map.of("error", "El email ya está en uso"));
         }
 
-        UserEntity user = new UserEntity();
+        User user = new User();
         user.setUsername(username);
         user.setPassword(passwordEncoder.encode(password));
         user.setName(name);
@@ -89,7 +89,7 @@ public class AuthController {
         user.setRole(role.toUpperCase());
         user.setDateAddedAsUser(LocalDate.now());
 
-        UserEntity saved = userRepository.save(user);
+        User saved = userRepository.save(user);
 
         String token = jwtService.generateToken(saved.getUsername(), saved.getRole(), saved.getId());
 

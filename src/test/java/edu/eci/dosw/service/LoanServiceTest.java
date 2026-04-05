@@ -1,13 +1,13 @@
 package edu.eci.dosw.service;
 
 import edu.eci.dosw.exception.BookNotAvailableException;
+import edu.eci.dosw.model.Availability;
+import edu.eci.dosw.model.Book;
 import edu.eci.dosw.model.Loan;
-import edu.eci.dosw.persistence.entity.BookEntity;
-import edu.eci.dosw.persistence.entity.LoanEntity;
-import edu.eci.dosw.persistence.entity.UserEntity;
-import edu.eci.dosw.persistence.repository.BookRepository;
-import edu.eci.dosw.persistence.repository.LoanRepository;
-import edu.eci.dosw.persistence.repository.UserRepository;
+import edu.eci.dosw.model.User;
+import edu.eci.dosw.persistence.BookPersistenceRepository;
+import edu.eci.dosw.persistence.LoanPersistenceRepository;
+import edu.eci.dosw.persistence.UserPersistenceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,68 +28,64 @@ import static org.mockito.Mockito.*;
 class LoanServiceTest {
 
     @Mock
-    private LoanRepository loanRepository;
+    private LoanPersistenceRepository loanRepository;
 
     @Mock
-    private BookRepository bookRepository;
+    private BookPersistenceRepository bookRepository;
 
     @Mock
-    private UserRepository userRepository;
+    private UserPersistenceRepository userRepository;
 
     @InjectMocks
     private LoanService loanService;
 
-    private BookEntity bookEntity;
-    private UserEntity userEntity;
+    private Book book;
+    private User user;
 
     @BeforeEach
     void setUp() {
-        bookEntity = new BookEntity();
-        bookEntity.setId("book-1");
-        bookEntity.setTitle("Clean Architecture");
-        bookEntity.setAuthor("Robert C. Martin");
-        bookEntity.setAvailable(true);
-        bookEntity.setTotalCopies(5);
-        bookEntity.setAvailableCopies(5);
-        bookEntity.setLoanedCopies(0);
+        book = new Book("book-1", "Clean Architecture", "Robert C. Martin", "ISBN1");
+        Availability availability = new Availability("Disponible", 5, 5, 0);
+        book.setAvailability(availability);
+        book.setAvailable(true);
 
-        userEntity = new UserEntity();
-        userEntity.setId("user-1");
-        userEntity.setName("Maria");
-        userEntity.setEmail("maria@eci.edu.co");
-        userEntity.setUsername("maria");
-        userEntity.setPassword("encoded");
-        userEntity.setRole("USER");
+        user = new User();
+        user.setId("user-1");
+        user.setName("Maria");
+        user.setEmail("maria@eci.edu.co");
+        user.setUsername("maria");
+        user.setPassword("encoded");
+        user.setRole("USER");
     }
 
     @Test
     void loanBook_ShouldCreateLoan_WhenBookAvailable() {
-        when(bookRepository.findById("book-1")).thenReturn(Optional.of(bookEntity));
-        when(userRepository.findById("user-1")).thenReturn(Optional.of(userEntity));
+        when(bookRepository.findById("book-1")).thenReturn(Optional.of(book));
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(user));
 
-        LoanEntity savedLoan = new LoanEntity();
+        Loan savedLoan = new Loan();
         savedLoan.setId("loan-1");
-        savedLoan.setBook(bookEntity);
-        savedLoan.setUser(userEntity);
+        savedLoan.setBook(book);
+        savedLoan.setUser(user);
         savedLoan.setLoanDate(LocalDate.now());
         savedLoan.setReturned(false);
         savedLoan.setLoanHistory(new ArrayList<>());
 
-        when(bookRepository.save(any(BookEntity.class))).thenReturn(bookEntity);
-        when(loanRepository.save(any(LoanEntity.class))).thenReturn(savedLoan);
+        when(bookRepository.save(any(Book.class))).thenReturn(book);
+        when(loanRepository.save(any(Loan.class))).thenReturn(savedLoan);
 
         Loan loan = loanService.loanBook("book-1", "user-1");
 
         assertNotNull(loan.getId());
-        verify(bookRepository).save(any(BookEntity.class));
-        verify(loanRepository).save(any(LoanEntity.class));
+        verify(bookRepository).save(any(Book.class));
+        verify(loanRepository).save(any(Loan.class));
     }
 
     @Test
     void loanBook_ShouldThrowException_WhenNoAvailableCopies() {
-        bookEntity.setAvailableCopies(0);
-        when(bookRepository.findById("book-1")).thenReturn(Optional.of(bookEntity));
-        when(userRepository.findById("user-1")).thenReturn(Optional.of(userEntity));
+        book.getAvailability().setAvailableCopies(0);
+        when(bookRepository.findById("book-1")).thenReturn(Optional.of(book));
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(user));
 
         assertThrows(BookNotAvailableException.class,
                 () -> loanService.loanBook("book-1", "user-1"));
@@ -105,7 +101,7 @@ class LoanServiceTest {
 
     @Test
     void loanBook_ShouldThrowException_WhenUserNotFound() {
-        when(bookRepository.findById("book-1")).thenReturn(Optional.of(bookEntity));
+        when(bookRepository.findById("book-1")).thenReturn(Optional.of(book));
         when(userRepository.findById("no-user")).thenReturn(Optional.empty());
 
         assertThrows(IllegalArgumentException.class,
@@ -114,33 +110,33 @@ class LoanServiceTest {
 
     @Test
     void returnBook_ShouldMarkLoanAsReturned() {
-        LoanEntity loanEntity = new LoanEntity();
-        loanEntity.setId("loan-1");
-        loanEntity.setBook(bookEntity);
-        loanEntity.setUser(userEntity);
-        loanEntity.setLoanDate(LocalDate.now());
-        loanEntity.setReturned(false);
-        loanEntity.setLoanHistory(new ArrayList<>());
-        bookEntity.setAvailableCopies(4);
-        bookEntity.setLoanedCopies(1);
+        Loan loan = new Loan();
+        loan.setId("loan-1");
+        loan.setBook(book);
+        loan.setUser(user);
+        loan.setLoanDate(LocalDate.now());
+        loan.setReturned(false);
+        loan.setLoanHistory(new ArrayList<>());
+        book.getAvailability().setAvailableCopies(4);
+        book.getAvailability().setLoanedCopies(1);
 
-        when(loanRepository.findById("loan-1")).thenReturn(Optional.of(loanEntity));
-        when(bookRepository.save(any(BookEntity.class))).thenReturn(bookEntity);
-        when(loanRepository.save(any(LoanEntity.class))).thenReturn(loanEntity);
+        when(loanRepository.findById("loan-1")).thenReturn(Optional.of(loan));
+        when(bookRepository.save(any(Book.class))).thenReturn(book);
+        when(loanRepository.save(any(Loan.class))).thenReturn(loan);
 
         Loan returned = loanService.returnBook("loan-1");
 
         assertTrue(returned.isReturned());
-        verify(bookRepository).save(any(BookEntity.class));
+        verify(bookRepository).save(any(Book.class));
     }
 
     @Test
     void returnBook_ShouldThrowException_WhenAlreadyReturned() {
-        LoanEntity loanEntity = new LoanEntity();
-        loanEntity.setId("loan-1");
-        loanEntity.setReturned(true);
+        Loan loan = new Loan();
+        loan.setId("loan-1");
+        loan.setReturned(true);
 
-        when(loanRepository.findById("loan-1")).thenReturn(Optional.of(loanEntity));
+        when(loanRepository.findById("loan-1")).thenReturn(Optional.of(loan));
 
         assertThrows(IllegalArgumentException.class,
                 () -> loanService.returnBook("loan-1"));
@@ -156,10 +152,10 @@ class LoanServiceTest {
 
     @Test
     void getAllLoans_ShouldReturnAllLoans() {
-        LoanEntity loan1 = new LoanEntity();
+        Loan loan1 = new Loan();
         loan1.setId("loan-1");
-        loan1.setBook(bookEntity);
-        loan1.setUser(userEntity);
+        loan1.setBook(book);
+        loan1.setUser(user);
         loan1.setLoanDate(LocalDate.now());
         loan1.setLoanHistory(new ArrayList<>());
 

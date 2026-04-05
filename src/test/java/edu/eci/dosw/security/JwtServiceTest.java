@@ -81,12 +81,10 @@ class JwtServiceTest {
         String token2 = jwtService.generateToken("user2", "LIBRARIAN", "2");
         String token3 = jwtService.generateToken("user3", "USER", "3");
         
-        // All tokens should be valid even with different users
         assertTrue(jwtService.isTokenValid(token1));
         assertTrue(jwtService.isTokenValid(token2));
         assertTrue(jwtService.isTokenValid(token3));
         
-        // Verify each token has correct claims
         assertEquals("user1", jwtService.extractUsername(token1));
         assertEquals("user2", jwtService.extractUsername(token2));
         assertEquals("user3", jwtService.extractUsername(token3));

@@ -8,8 +8,10 @@ import edu.eci.dosw.core.util.ValidationUtil;
  */
 public class LoanValidator {
 
+    /**
+     * Constructor privado para evitar la instanciación de esta clase utilitaria.
+     */
     private LoanValidator() {
-        // Clase utilitaria — no se permite instanciar
     }
 
     /**

@@ -14,8 +14,10 @@ import edu.eci.dosw.core.model.Availability;
  */
 public class BookMapper {
 
+    /**
+     * Constructor privado para evitar la instanciación de esta clase utilitaria.
+     */
     private BookMapper() {
-        // Clase utilitaria — no se permite instanciar
     }
 
     /**
@@ -85,7 +87,6 @@ public class BookMapper {
             try {
                 book.setPublicationType(Enum.valueOf(edu.eci.dosw.core.model.enums.PublicationType.class, dto.getPublicationType()));
             } catch (IllegalArgumentException e) {
-                // Si no es válido, dejar nulo
                 book.setPublicationType(null);
             }
         }

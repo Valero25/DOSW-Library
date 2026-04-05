@@ -1,8 +1,7 @@
 package edu.eci.dosw.service;
 
 import edu.eci.dosw.model.Book;
-import edu.eci.dosw.persistence.entity.BookEntity;
-import edu.eci.dosw.persistence.repository.BookRepository;
+import edu.eci.dosw.persistence.BookPersistenceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,39 +20,34 @@ import static org.mockito.Mockito.*;
 class BookServiceTest {
 
     @Mock
-    private BookRepository bookRepository;
+    private BookPersistenceRepository bookRepository;
 
     @InjectMocks
     private BookService bookService;
 
-    private BookEntity bookEntity;
+    private Book book;
 
     @BeforeEach
     void setUp() {
-        bookEntity = new BookEntity();
-        bookEntity.setId("book-1");
-        bookEntity.setTitle("Clean Code");
-        bookEntity.setAuthor("Robert C. Martin");
-        bookEntity.setIsbn("9780132350884");
-        bookEntity.setAvailable(true);
+        book = new Book("book-1", "Clean Code", "Robert C. Martin", "9780132350884");
     }
 
     @Test
     void addBook_ShouldAddBookSuccessfully() {
-        when(bookRepository.save(any(BookEntity.class))).thenReturn(bookEntity);
+        when(bookRepository.save(any(Book.class))).thenReturn(book);
 
-        Book book = new Book(null, "Clean Code", "Robert C. Martin", "9780132350884");
-        Book result = bookService.addBook(book);
+        Book input = new Book(null, "Clean Code", "Robert C. Martin", "9780132350884");
+        Book result = bookService.addBook(input);
 
         assertNotNull(result.getId());
         assertEquals("Clean Code", result.getTitle());
-        verify(bookRepository).save(any(BookEntity.class));
+        verify(bookRepository).save(any(Book.class));
     }
 
     @Test
     void addBook_ShouldThrowException_WhenTitleIsBlank() {
-        Book book = new Book(null, "", "Author", "9780132350884");
-        assertThrows(IllegalArgumentException.class, () -> bookService.addBook(book));
+        Book input = new Book(null, "", "Author", "9780132350884");
+        assertThrows(IllegalArgumentException.class, () -> bookService.addBook(input));
     }
 
     @Test
@@ -63,12 +57,9 @@ class BookServiceTest {
 
     @Test
     void getAllBooks_ShouldReturnAllBooks() {
-        BookEntity entity2 = new BookEntity();
-        entity2.setId("book-2");
-        entity2.setTitle("Book 2");
-        entity2.setAuthor("Author 2");
+        Book book2 = new Book("book-2", "Book 2", "Author 2", "ISBN2");
 
-        when(bookRepository.findAll()).thenReturn(List.of(bookEntity, entity2));
+        when(bookRepository.findAll()).thenReturn(List.of(book, book2));
 
         List<Book> books = bookService.getAllBooks();
         assertEquals(2, books.size());
@@ -76,7 +67,7 @@ class BookServiceTest {
 
     @Test
     void findBookById_ShouldReturnBook_WhenExists() {
-        when(bookRepository.findById("book-1")).thenReturn(Optional.of(bookEntity));
+        when(bookRepository.findById("book-1")).thenReturn(Optional.of(book));
 
         Optional<Book> found = bookService.findBookById("book-1");
 

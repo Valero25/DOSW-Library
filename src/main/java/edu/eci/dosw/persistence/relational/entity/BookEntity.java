@@ -1,4 +1,4 @@
-package edu.eci.dosw.persistence.entity;
+package edu.eci.dosw.persistence.relational.entity;
 
 import edu.eci.dosw.model.enums.PublicationType;
 import jakarta.persistence.*;
@@ -43,12 +43,10 @@ public class BookEntity {
 
     private LocalDate publicationDate;
 
-    // Metadata embebido
     private Integer pages;
     private String language;
     private String publisher;
 
-    // Availability embebido
     private String status;
     private Integer totalCopies;
     private Integer availableCopies;

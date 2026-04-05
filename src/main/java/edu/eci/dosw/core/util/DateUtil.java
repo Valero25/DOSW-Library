@@ -8,8 +8,10 @@ import java.time.LocalDate;
  */
 public class DateUtil {
 
+    /**
+     * Constructor privado para evitar la instanciación de esta clase utilitaria.
+     */
     private DateUtil() {
-        // Clase utilitaria — no se permite instanciar
     }
 
     /**

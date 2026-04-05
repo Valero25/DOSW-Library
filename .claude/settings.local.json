@@ -12,7 +12,10 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:8080/api/books)",
       "Bash(curl -s -X POST http://localhost:8080/auth/register -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin123\",\"name\":\"Admin\",\"email\":\"admin@library.com\",\"role\":\"LIBRARIAN\"}')",
       "Bash(curl -s -X POST http://localhost:8080/auth/login -H \"Content-Type: application/json\" -d '{\"username\":\"admin\",\"password\":\"admin123\"}')",
-      "Bash(mvn test:*)"
+      "Bash(mvn test:*)",
+      "Bash(netstat -ano)",
+      "Bash(tasklist /FI \"PID eq 40028\" /FO TABLE)",
+      "Bash(taskkill //PID 40028 //F)"
     ]
   }
 }

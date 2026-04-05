@@ -1,43 +1,36 @@
-package edu.eci.dosw.persistence.entity;
+package edu.eci.dosw.persistence.nonrelational.document;
 
 import edu.eci.dosw.model.enums.MembershipType;
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
 
-@Entity
-@Table(name = "users")
+@Document(collection = "users")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserEntity {
+public class UserDocument {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false, unique = true)
+    @Indexed(unique = true)
     private String email;
 
-    @Column(nullable = false, unique = true)
+    @Indexed(unique = true)
     private String username;
 
-    @Column(nullable = false)
     private String password;
-
-    @Column(nullable = false)
-    private String role; // USER o LIBRARIAN
-
-    @Enumerated(EnumType.STRING)
+    private String role;
     private MembershipType membershipType;
-
     private LocalDate dateAddedAsUser;
 }

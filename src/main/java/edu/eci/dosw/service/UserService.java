@@ -1,16 +1,13 @@
 package edu.eci.dosw.service;
 
 import edu.eci.dosw.model.User;
-import edu.eci.dosw.persistence.entity.UserEntity;
-import edu.eci.dosw.persistence.mapper.UserEntityMapper;
-import edu.eci.dosw.persistence.repository.UserRepository;
+import edu.eci.dosw.persistence.UserPersistenceRepository;
 import edu.eci.dosw.util.ValidationUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Servicio encargado de gestionar los usuarios de la biblioteca.
@@ -18,9 +15,9 @@ import java.util.stream.Collectors;
 @Service
 public class UserService {
 
-    private final UserRepository userRepository;
+    private final UserPersistenceRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserPersistenceRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -38,36 +35,27 @@ public class UserService {
             user.setRole("USER");
         }
 
-        UserEntity entity = UserEntityMapper.toEntity(user);
-        entity.setUsername(user.getUsername());
-        entity.setPassword(user.getPassword());
-        entity.setRole(user.getRole());
-
-        UserEntity saved = userRepository.save(entity);
-        return UserEntityMapper.toDomain(saved);
+        return userRepository.save(user);
     }
 
     /**
      * Retorna todos los usuarios registrados.
      */
     public List<User> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(UserEntityMapper::toDomain)
-                .collect(Collectors.toList());
+        return userRepository.findAll();
     }
 
     /**
      * Busca un usuario por su ID.
      */
     public Optional<User> findUserById(String id) {
-        return userRepository.findById(id)
-                .map(UserEntityMapper::toDomain);
+        return userRepository.findById(id);
     }
 
     /**
      * Busca un usuario por su username.
      */
-    public Optional<UserEntity> findByUsername(String username) {
+    public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
 }

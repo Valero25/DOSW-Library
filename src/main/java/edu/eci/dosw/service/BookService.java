@@ -1,16 +1,14 @@
 package edu.eci.dosw.service;
 
+import edu.eci.dosw.model.Availability;
 import edu.eci.dosw.model.Book;
-import edu.eci.dosw.persistence.entity.BookEntity;
-import edu.eci.dosw.persistence.mapper.BookEntityMapper;
-import edu.eci.dosw.persistence.repository.BookRepository;
+import edu.eci.dosw.persistence.BookPersistenceRepository;
 import edu.eci.dosw.util.ValidationUtil;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Servicio encargado de gestionar el catálogo de libros.
@@ -18,9 +16,9 @@ import java.util.stream.Collectors;
 @Service
 public class BookService {
 
-    private final BookRepository bookRepository;
+    private final BookPersistenceRepository bookRepository;
 
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookPersistenceRepository bookRepository) {
         this.bookRepository = bookRepository;
     }
 
@@ -46,26 +44,21 @@ public class BookService {
             book.setDateAddedToCatalog(LocalDate.now());
         }
 
-        BookEntity entity = BookEntityMapper.toEntity(book);
-        BookEntity saved = bookRepository.save(entity);
-        return BookEntityMapper.toDomain(saved);
+        return bookRepository.save(book);
     }
 
     /**
      * Retorna todos los libros del catálogo.
      */
     public List<Book> getAllBooks() {
-        return bookRepository.findAll().stream()
-                .map(BookEntityMapper::toDomain)
-                .collect(Collectors.toList());
+        return bookRepository.findAll();
     }
 
     /**
      * Busca un libro por su ID.
      */
     public Optional<Book> findBookById(String id) {
-        return bookRepository.findById(id)
-                .map(BookEntityMapper::toDomain);
+        return bookRepository.findById(id);
     }
 
     /**
@@ -83,78 +76,85 @@ public class BookService {
      * Reduce en uno la cantidad de ejemplares disponibles.
      */
     public void decrementAvailableCopies(String bookId) {
-        BookEntity entity = bookRepository.findById(bookId)
+        Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new IllegalArgumentException("Libro no encontrado: " + bookId));
 
-        int available = entity.getAvailableCopies() != null ? entity.getAvailableCopies() : 0;
+        Availability avail = book.getAvailability();
+        int available = (avail != null && avail.getAvailableCopies() != null) ? avail.getAvailableCopies() : 0;
         if (available <= 0) {
             throw new IllegalArgumentException("El libro no tiene ejemplares disponibles.");
         }
 
-        entity.setAvailableCopies(available - 1);
-        entity.setLoanedCopies((entity.getLoanedCopies() != null ? entity.getLoanedCopies() : 0) + 1);
-        entity.setAvailable(entity.getAvailableCopies() > 0);
-        entity.setStatus(entity.getAvailableCopies() > 0 ? "Disponible" : "Agotado");
-        bookRepository.save(entity);
+        if (avail == null) {
+            avail = new Availability();
+            book.setAvailability(avail);
+        }
+        avail.setAvailableCopies(available - 1);
+        int loaned = avail.getLoanedCopies() != null ? avail.getLoanedCopies() : 0;
+        avail.setLoanedCopies(loaned + 1);
+        book.setAvailable(avail.getAvailableCopies() > 0);
+        avail.setStatus(avail.getAvailableCopies() > 0 ? "Disponible" : "Agotado");
+        bookRepository.save(book);
     }
 
     /**
      * Aumenta en uno la cantidad de ejemplares disponibles.
      */
     public void incrementAvailableCopies(String bookId) {
-        BookEntity entity = bookRepository.findById(bookId)
+        Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new IllegalArgumentException("Libro no encontrado: " + bookId));
 
-        int available = entity.getAvailableCopies() != null ? entity.getAvailableCopies() : 0;
-        int total = entity.getTotalCopies() != null ? entity.getTotalCopies() : 0;
+        Availability avail = book.getAvailability();
+        int available = (avail != null && avail.getAvailableCopies() != null) ? avail.getAvailableCopies() : 0;
+        int total = (avail != null && avail.getTotalCopies() != null) ? avail.getTotalCopies() : 0;
 
         if (available >= total) {
             throw new IllegalArgumentException("No se puede exceder el stock total del libro.");
         }
 
-        entity.setAvailableCopies(available + 1);
-        entity.setLoanedCopies((entity.getLoanedCopies() != null ? entity.getLoanedCopies() : 0) - 1);
-        entity.setAvailable(true);
-        entity.setStatus("Disponible");
-        bookRepository.save(entity);
+        if (avail == null) {
+            avail = new Availability();
+            book.setAvailability(avail);
+        }
+        avail.setAvailableCopies(available + 1);
+        int loaned = avail.getLoanedCopies() != null ? avail.getLoanedCopies() : 0;
+        avail.setLoanedCopies(loaned - 1);
+        book.setAvailable(true);
+        avail.setStatus("Disponible");
+        bookRepository.save(book);
     }
 
     /**
      * Actualiza un libro existente.
      */
     public Book updateBook(String id, Book book) {
-        BookEntity entity = bookRepository.findById(id)
+        Book existing = bookRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Libro no encontrado: " + id));
 
-        if (book.getTitle() != null) entity.setTitle(book.getTitle());
-        if (book.getAuthor() != null) entity.setAuthor(book.getAuthor());
-        if (book.getIsbn() != null) entity.setIsbn(book.getIsbn());
-        if (book.getCategories() != null) entity.setCategories(book.getCategories());
-        if (book.getPublicationType() != null) entity.setPublicationType(book.getPublicationType());
-        if (book.getPublicationDate() != null) entity.setPublicationDate(book.getPublicationDate());
+        if (book.getTitle() != null) existing.setTitle(book.getTitle());
+        if (book.getAuthor() != null) existing.setAuthor(book.getAuthor());
+        if (book.getIsbn() != null) existing.setIsbn(book.getIsbn());
+        if (book.getCategories() != null) existing.setCategories(book.getCategories());
+        if (book.getPublicationType() != null) existing.setPublicationType(book.getPublicationType());
+        if (book.getPublicationDate() != null) existing.setPublicationDate(book.getPublicationDate());
 
         if (book.getMetadata() != null) {
-            entity.setPages(book.getMetadata().getPages());
-            entity.setLanguage(book.getMetadata().getLanguage());
-            entity.setPublisher(book.getMetadata().getPublisher());
+            existing.setMetadata(book.getMetadata());
         }
 
         if (book.getAvailability() != null) {
-            if (book.getAvailability().getTotalCopies() != null) {
-                entity.setTotalCopies(book.getAvailability().getTotalCopies());
-            }
-            if (book.getAvailability().getAvailableCopies() != null) {
-                entity.setAvailableCopies(book.getAvailability().getAvailableCopies());
-            }
-            if (book.getAvailability().getLoanedCopies() != null) {
-                entity.setLoanedCopies(book.getAvailability().getLoanedCopies());
-            }
-            if (book.getAvailability().getStatus() != null) {
-                entity.setStatus(book.getAvailability().getStatus());
+            Availability existAvail = existing.getAvailability();
+            if (existAvail == null) {
+                existing.setAvailability(book.getAvailability());
+            } else {
+                Availability newAvail = book.getAvailability();
+                if (newAvail.getTotalCopies() != null) existAvail.setTotalCopies(newAvail.getTotalCopies());
+                if (newAvail.getAvailableCopies() != null) existAvail.setAvailableCopies(newAvail.getAvailableCopies());
+                if (newAvail.getLoanedCopies() != null) existAvail.setLoanedCopies(newAvail.getLoanedCopies());
+                if (newAvail.getStatus() != null) existAvail.setStatus(newAvail.getStatus());
             }
         }
 
-        BookEntity saved = bookRepository.save(entity);
-        return BookEntityMapper.toDomain(saved);
+        return bookRepository.save(existing);
     }
 }

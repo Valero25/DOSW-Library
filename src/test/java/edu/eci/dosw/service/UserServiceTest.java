@@ -1,8 +1,7 @@
 package edu.eci.dosw.service;
 
 import edu.eci.dosw.model.User;
-import edu.eci.dosw.persistence.entity.UserEntity;
-import edu.eci.dosw.persistence.repository.UserRepository;
+import edu.eci.dosw.persistence.UserPersistenceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,48 +20,48 @@ import static org.mockito.Mockito.*;
 class UserServiceTest {
 
     @Mock
-    private UserRepository userRepository;
+    private UserPersistenceRepository userRepository;
 
     @InjectMocks
     private UserService userService;
 
-    private UserEntity userEntity;
+    private User user;
 
     @BeforeEach
     void setUp() {
-        userEntity = new UserEntity();
-        userEntity.setId("user-1");
-        userEntity.setName("Juan");
-        userEntity.setEmail("juan@eci.edu.co");
-        userEntity.setUsername("juan");
-        userEntity.setPassword("encoded");
-        userEntity.setRole("USER");
+        user = new User();
+        user.setId("user-1");
+        user.setName("Juan");
+        user.setEmail("juan@eci.edu.co");
+        user.setUsername("juan");
+        user.setPassword("encoded");
+        user.setRole("USER");
     }
 
     @Test
     void registerUser_ShouldRegisterSuccessfully() {
-        when(userRepository.save(any(UserEntity.class))).thenReturn(userEntity);
+        when(userRepository.save(any(User.class))).thenReturn(user);
 
-        User user = new User();
-        user.setName("Juan");
-        user.setEmail("juan@eci.edu.co");
-        user.setUsername("juan");
-        user.setPassword("pass123");
+        User input = new User();
+        input.setName("Juan");
+        input.setEmail("juan@eci.edu.co");
+        input.setUsername("juan");
+        input.setPassword("pass123");
 
-        User result = userService.registerUser(user);
+        User result = userService.registerUser(input);
 
         assertNotNull(result.getId());
         assertEquals("Juan", result.getName());
-        verify(userRepository).save(any(UserEntity.class));
+        verify(userRepository).save(any(User.class));
     }
 
     @Test
     void registerUser_ShouldThrowException_WhenNameIsBlank() {
-        User user = new User();
-        user.setName("  ");
-        user.setEmail("test@eci.edu.co");
+        User input = new User();
+        input.setName("  ");
+        input.setEmail("test@eci.edu.co");
 
-        assertThrows(IllegalArgumentException.class, () -> userService.registerUser(user));
+        assertThrows(IllegalArgumentException.class, () -> userService.registerUser(input));
     }
 
     @Test
@@ -72,12 +71,12 @@ class UserServiceTest {
 
     @Test
     void getAllUsers_ShouldReturnAllRegisteredUsers() {
-        UserEntity entity2 = new UserEntity();
-        entity2.setId("user-2");
-        entity2.setName("Ana");
-        entity2.setEmail("ana@eci.edu.co");
+        User user2 = new User();
+        user2.setId("user-2");
+        user2.setName("Ana");
+        user2.setEmail("ana@eci.edu.co");
 
-        when(userRepository.findAll()).thenReturn(List.of(userEntity, entity2));
+        when(userRepository.findAll()).thenReturn(List.of(user, user2));
 
         List<User> users = userService.getAllUsers();
         assertEquals(2, users.size());
@@ -85,7 +84,7 @@ class UserServiceTest {
 
     @Test
     void findUserById_ShouldReturnUser_WhenExists() {
-        when(userRepository.findById("user-1")).thenReturn(Optional.of(userEntity));
+        when(userRepository.findById("user-1")).thenReturn(Optional.of(user));
 
         Optional<User> found = userService.findUserById("user-1");
 

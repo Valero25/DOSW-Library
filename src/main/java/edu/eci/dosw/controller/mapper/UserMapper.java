@@ -10,8 +10,10 @@ import edu.eci.dosw.core.model.User;
  */
 public class UserMapper {
 
+    /**
+     * Constructor privado para evitar la instanciación de esta clase utilitaria.
+     */
     private UserMapper() {
-        // Clase utilitaria — no se permite instanciar
     }
 
     /**
@@ -51,7 +53,6 @@ public class UserMapper {
             try {
                 user.setMembershipType(Enum.valueOf(edu.eci.dosw.core.model.enums.MembershipType.class, dto.getMembershipType()));
             } catch (IllegalArgumentException e) {
-                // Si no es válido, dejar nulo
                 user.setMembershipType(null);
             }
         }

@@ -6,8 +6,10 @@ package edu.eci.dosw.core.util;
  */
 public class ValidationUtil {
 
+    /**
+     * Constructor privado para evitar la instanciación de esta clase utilitaria.
+     */
     private ValidationUtil() {
-        // Clase utilitaria — no se permite instanciar
     }
 
     /**

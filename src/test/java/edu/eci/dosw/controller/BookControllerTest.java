@@ -2,8 +2,6 @@ package edu.eci.dosw.controller;
 
 import edu.eci.dosw.controller.dto.BookDTO;
 import edu.eci.dosw.model.Book;
-import edu.eci.dosw.persistence.entity.UserEntity;
-import edu.eci.dosw.persistence.repository.UserRepository;
 import edu.eci.dosw.security.JwtService;
 import edu.eci.dosw.service.BookService;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,12 +14,10 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -47,26 +43,12 @@ class BookControllerTest {
     @Autowired
     private JwtService jwtService;
 
-    private UserEntity librarianUser;
-    private UserEntity regularUser;
     private String librarianToken;
     private String userToken;
     private BookDTO bookDTO;
 
     @BeforeEach
     void setUp() {
-        // Setup librarian user
-        librarianUser = new UserEntity();
-        librarianUser.setId("librarian-1");
-        librarianUser.setUsername("librarian");
-        librarianUser.setRole("LIBRARIAN");
-        
-        // Setup regular user
-        regularUser = new UserEntity();
-        regularUser.setId("user-1");
-        regularUser.setUsername("regularuser");
-        regularUser.setRole("USER");
-
         // Generate tokens
         librarianToken = jwtService.generateToken("librarian", "LIBRARIAN", "librarian-1");
         userToken = jwtService.generateToken("regularuser", "USER", "user-1");

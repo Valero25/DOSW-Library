@@ -9,8 +9,10 @@ import edu.eci.dosw.core.util.ValidationUtil;
  */
 public class BookValidator {
 
+    /**
+     * Constructor privado para evitar la instanciación de esta clase utilitaria.
+     */
     private BookValidator() {
-        // Clase utilitaria — no se permite instanciar
     }
 
     /**

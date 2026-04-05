@@ -17,8 +17,10 @@ import java.util.List;
  */
 public class LoanMapper {
 
+    /**
+     * Constructor privado para evitar la instanciación de esta clase utilitaria.
+     */
     private LoanMapper() {
-        // Clase utilitaria — no se permite instanciar
     }
 
     /**

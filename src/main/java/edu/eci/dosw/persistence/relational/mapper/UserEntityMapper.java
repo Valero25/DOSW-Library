@@ -1,12 +1,11 @@
-package edu.eci.dosw.persistence.mapper;
+package edu.eci.dosw.persistence.relational.mapper;
 
 import edu.eci.dosw.model.User;
-import edu.eci.dosw.persistence.entity.UserEntity;
+import edu.eci.dosw.persistence.relational.entity.UserEntity;
 
 public class UserEntityMapper {
 
-    private UserEntityMapper() {
-    }
+    private UserEntityMapper() {}
 
     public static User toDomain(UserEntity entity) {
         User user = new User();

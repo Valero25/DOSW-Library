@@ -8,8 +8,10 @@ import java.util.UUID;
  */
 public class IdGeneratorUtil {
 
+    /**
+     * Constructor privado para evitar la instanciación de esta clase utilitaria.
+     */
     private IdGeneratorUtil() {
-        // Clase utilitaria — no se permite instanciar
     }
 
     /**

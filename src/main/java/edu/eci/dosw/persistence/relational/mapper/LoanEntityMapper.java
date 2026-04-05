@@ -1,16 +1,15 @@
-package edu.eci.dosw.persistence.mapper;
+package edu.eci.dosw.persistence.relational.mapper;
 
 import edu.eci.dosw.model.Loan;
 import edu.eci.dosw.model.LoanHistory;
-import edu.eci.dosw.persistence.entity.LoanEntity;
-import edu.eci.dosw.persistence.entity.LoanHistoryEntity;
+import edu.eci.dosw.persistence.relational.entity.LoanEntity;
+import edu.eci.dosw.persistence.relational.entity.LoanHistoryEntity;
 
 import java.util.stream.Collectors;
 
 public class LoanEntityMapper {
 
-    private LoanEntityMapper() {
-    }
+    private LoanEntityMapper() {}
 
     public static Loan toDomain(LoanEntity entity) {
         Loan loan = new Loan();
@@ -20,13 +19,11 @@ public class LoanEntityMapper {
         loan.setLoanDate(entity.getLoanDate());
         loan.setReturnDate(entity.getReturnDate());
         loan.setReturned(entity.isReturned());
-
         if (entity.getLoanHistory() != null) {
             loan.setLoanHistory(entity.getLoanHistory().stream()
                     .map(h -> new LoanHistory(h.getStatus(), h.getDate()))
                     .collect(Collectors.toList()));
         }
-
         return loan;
     }
 
@@ -36,7 +33,6 @@ public class LoanEntityMapper {
         entity.setLoanDate(loan.getLoanDate());
         entity.setReturnDate(loan.getReturnDate());
         entity.setReturned(loan.isReturned());
-
         if (loan.getLoanHistory() != null) {
             entity.setLoanHistory(loan.getLoanHistory().stream()
                     .map(h -> {
@@ -45,10 +41,8 @@ public class LoanEntityMapper {
                         he.setDate(h.getDate());
                         he.setLoan(entity);
                         return he;
-                    })
-                    .collect(Collectors.toList()));
+                    }).collect(Collectors.toList()));
         }
-
         return entity;
     }
 }

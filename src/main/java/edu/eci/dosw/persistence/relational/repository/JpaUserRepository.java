@@ -1,13 +1,13 @@
-package edu.eci.dosw.persistence.repository;
+package edu.eci.dosw.persistence.relational.repository;
 
-import edu.eci.dosw.persistence.entity.UserEntity;
+import edu.eci.dosw.persistence.relational.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<UserEntity, String> {
+public interface JpaUserRepository extends JpaRepository<UserEntity, String> {
 
     Optional<UserEntity> findByUsername(String username);
 
