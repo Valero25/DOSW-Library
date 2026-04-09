@@ -48,6 +48,10 @@ buildNumber.properties
 
 # VS Code
 .vscode/
+
+# Claude AI Development (Local Only)
+.claude/
+CLAUDE.md
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
